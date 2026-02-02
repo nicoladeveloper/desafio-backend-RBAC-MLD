@@ -11,7 +11,7 @@ import * as bcrypt from 'bcrypt';
 
 export interface UserPayload {
   sub: string;
-  id?: string; // Adicionado para suporte a diferentes payloads de JWT
+  id?: string; 
   email: string;
   role: string;
 }
@@ -31,14 +31,14 @@ export class UsersService {
 
     const hashedPassword = await bcrypt.hash(createUserDto.senha, 10);
 
-    // DETERMINA O ID DO CRIADOR: Tenta 'sub' (padrão JWT) ou 'id'
+    //ID DO CRIADOR, (padrão JWT) ou 'id'
     const creatorId = currentUser.sub || currentUser.id;
 
     return this.prisma.funcionario.create({
       data: {
         ...createUserDto,
         senha: hashedPassword,
-        createdById: creatorId, // Resolve o "null" no banco
+        createdById: creatorId, 
       },
       select: {
         id: true,
@@ -59,7 +59,7 @@ export class UsersService {
       });
     }
 
-    // Escopo granular: Usuário comum vê apenas a si mesmo
+    // Usuário comum vê apenas a si mesmo
     return this.prisma.funcionario.findMany({
       where: { id: userId },
       include: { role: true },
