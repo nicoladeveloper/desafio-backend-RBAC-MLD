@@ -42,7 +42,7 @@ export class AuthService {
       user: {
         id: user.id,
         nome: user.nome,
-        role: user.role.nome, // <--- Ajustado aqui também
+        role: user.role.nome,
       },
     };
   }
