@@ -9,7 +9,7 @@ import {
   UseGuards,
   Req,
 } from '@nestjs/common';
-import { Request } from 'express'; // Importação essencial para tipagem
+import { Request } from 'express';
 import { UsersService, UserPayload } from './Funcionario.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -20,7 +20,6 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { CheckPermission } from '../auth/decorators/permissions.decorator';
 
-// Interface ajustada para evitar conflitos de tipo
 interface RequestWithUser extends Request {
   user: UserPayload;
 }
@@ -36,9 +35,7 @@ export class UsersController {
   @CheckPermission('employees', 'CREATE', 'all')
   @ApiOperation({ summary: 'Criar novo funcionário (Admin apenas)' })
   create(@Body() createUserDto: CreateUserDto, @Req() req: RequestWithUser) {
-    // LOG DE DEPURAÇÃO: Verifique o terminal após enviar o POST pelo Swagger
     console.log('Dados do usuário no Token:', req.user);
-    // Passamos o req.user para o service preencher o createdById
     return this.usersService.create(createUserDto, req.user);
   }
 
