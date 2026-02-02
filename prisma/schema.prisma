@@ -1,0 +1,59 @@
+// generator e datasource mantidos conforme seu código
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Action {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+}
+
+enum Scope {
+  OWN
+  ALL
+}
+
+model Permission {
+  id       String   @id @default(cuid())
+  resource String
+  action   Action
+  scope    Scope
+  roles    Role[]
+}
+
+model Role {
+  id           String        @id @default(cuid())
+  nome         String        @unique
+  permissions  Permission[]
+  funcionarios funcionario[]
+}
+
+model funcionario {
+  id        String   @id @default(cuid())
+  nome      String
+  email     String   @unique
+  senha     String
+  roleId    String
+  role      Role     @relation(fields: [roleId], references: [id])
+
+  // ---AUDITORIA E OWNERSHIP
+  createdAt DateTime @default(now()) // [cite: 39]
+  updatedAt DateTime @updatedAt      // [cite: 39]
+
+  // Relação 1-N:
+  createdById String?
+  criadoPor   funcionario?  @relation("UserAudit", fields: [createdById], references: [id])
+  criados     funcionario[] @relation("UserAudit")
+  
+  //rastreabilidade [cite: 40]
+  updatedByUserId String?
+
+  @@map("funcionarios")
+}
