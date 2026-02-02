@@ -20,7 +20,6 @@ export class AuthController {
     },
   })
   async login(@Body() body: any) {
-    // Aqui chamamos o service que você já tem
     return this.authService.login(body.email, body.senha);
   }
 }
