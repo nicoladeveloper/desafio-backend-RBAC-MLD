@@ -27,7 +27,7 @@ Sistema de gerenciamento de funcionários com autenticação JWT e controle de a
 ## Links
 
 - **API Base URL**: [https://desafio-backend-rbac-mld.onrender.com](https://desafio-backend-rbac-mld.onrender.com)
-- **Documentação Swagger**: [https://desafio-backend-rbac-mld.onrender.com/api](https://desafio-backend-rbac-mld.onrender.com/api)
+- **Documentação Swagger**: [https://desafio-backend-rbac-mld.onrender.com/api](https://desafio-backend-rbac-mld.onrender.com/api/docs)
 
 ## Acesso para Testes
 
