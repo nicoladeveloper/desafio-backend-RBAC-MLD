@@ -11,7 +11,7 @@ import * as bcrypt from 'bcrypt';
 
 export interface UserPayload {
   sub: string;
-  id?: string; 
+  id?: string;
   email: string;
   role: string;
 }
@@ -21,6 +21,7 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async create(createUserDto: CreateUserDto, currentUser: UserPayload) {
+    // 1. VALIDAÇÃO DE E-MAIL DUPLICADO
     const userExists = await this.prisma.funcionario.findUnique({
       where: { email: createUserDto.email },
     });
@@ -29,16 +30,26 @@ export class UsersService {
       throw new ConflictException('Este e-mail já está cadastrado.');
     }
 
-    const hashedPassword = await bcrypt.hash(createUserDto.senha, 10);
+    // 2. VALIDAÇÃO DO ROLEID (EVITA ERRO 500)
+    const roleExists = await this.prisma.role.findUnique({
+      where: { id: createUserDto.roleId },
+    });
 
-    //ID DO CRIADOR, (padrão JWT) ou 'id'
+    if (!roleExists) {
+      throw new NotFoundException(
+        `O cargo (roleId) ${createUserDto.roleId} não existe no sistema.`,
+      );
+    }
+
+    // 3. CRIPTOGRAFIA E CRIAÇÃO
+    const hashedPassword = await bcrypt.hash(createUserDto.senha, 10);
     const creatorId = currentUser.sub || currentUser.id;
 
     return this.prisma.funcionario.create({
       data: {
         ...createUserDto,
         senha: hashedPassword,
-        createdById: creatorId, 
+        createdById: creatorId,
       },
       select: {
         id: true,
@@ -59,7 +70,6 @@ export class UsersService {
       });
     }
 
-    // Usuário comum vê apenas a si mesmo
     return this.prisma.funcionario.findMany({
       where: { id: userId },
       include: { role: true },
@@ -98,10 +108,19 @@ export class UsersService {
       throw new ForbiddenException('Você não pode editar outros funcionários.');
     }
 
-    if (currentUser.role !== 'ADMIN' && updateUserDto.roleId) {
-      throw new ForbiddenException(
-        'Você não tem permissão para alterar cargos.',
-      );
+    // Valida se o cargo existe caso esteja sendo alterado
+    if (updateUserDto.roleId) {
+      if (currentUser.role !== 'ADMIN') {
+        throw new ForbiddenException(
+          'Você não tem permissão para alterar cargos.',
+        );
+      }
+      const roleExists = await this.prisma.role.findUnique({
+        where: { id: updateUserDto.roleId },
+      });
+      if (!roleExists) {
+        throw new NotFoundException('O novo cargo informado não existe.');
+      }
     }
 
     if (updateUserDto.senha) {
